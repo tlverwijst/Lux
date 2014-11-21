@@ -7,12 +7,14 @@
     </category>
     <category label="Schedule">
         <setting id="use_schedule" type="bool" label="Use schedule" default="true" />
+
         <setting type="lsep" label="Start time"/>
         <setting label="Hour" type="enum" id="start_hour" subsetting="true" default="18" enable="eq(-2,true)" values="00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23"/>
 
         <setting label="Minute" type="enum" id="start_minute" subsetting="true" enable="eq(-3,true)" default="00" values="00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59"/>
 
         <setting type="lsep" label="End time"/>
+
         <setting label="Hour" type="enum" id="end_hour" subsetting="true" default="5" enable="eq(-5,true)" values="00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23"/>
         <setting label="Minute" type="enum" id="end_minute" subsetting="true" enable="eq(-6,true)" default="00" values="00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59" />
 

@@ -38,7 +38,6 @@ def triggerTime(h=0, m=0, next_day=False):
     return test_time
 
 
-
 log("Loading '%s' version '%s'" % (__scriptname__, __version__))
 
 #Class start
@@ -79,7 +78,7 @@ class LightsOut(xbmc.Player):
 
     def onPlayBackPaused(self):
         if self.disable_on_pause == "true":
-            subprocess.call( "sudo python /home/pi/.xbmc/addons/service.sublime/resources/setpin.py 2 out high", shell=True)
+            subprocess.call("sudo python /home/pi/.xbmc/addons/service.sublime/resources/setpin.py 2 out high", shell=True)
 
     def onPlayBackResumed(self):
         if self.disable_on_pause == "true":
@@ -89,6 +88,7 @@ class LightsOut(xbmc.Player):
         self.reset()
 
     def onPlayBackEnded(self):
+        log("playback ended, timeout: "+str(self.reset_timeout) +" seconds")
         xbmc.sleep(self.reset_timeout)
         self.onPlayBackStopped()
 
@@ -120,7 +120,10 @@ class LightsOut(xbmc.Player):
 
     def enable(self):
 
+        log("Enabled")
+
         trigger_window_active = False
+
         now = datetime.datetime.now()
         current_time = now.time()
         end_datetime = self.end_time
@@ -145,8 +148,13 @@ class LightsOut(xbmc.Player):
             trigger_window_active = True
 
         if trigger_window_active:
-            if self.show_notifications == "true":
-                notify("Switched off the lights" )
+            # set message
+            message = "Switched off the lights"
+
+            # notify if enabled
+            if self.show_notifications == "true": notify(message)
+
+            #  switch lights
             subprocess.call( "sudo python /home/pi/.xbmc/addons/service.lux/resources/setpin.py 2 out low", shell=True)
             self.active = True
 
@@ -158,21 +166,32 @@ class LightsOut(xbmc.Player):
                 log("Hyperion is already running, or ignoring")
 
         else:
+            message = "Trigger is not active"
             if self.show_notifications == "true":
-                notify("Trigger is not active")
+                notify(message)
+            log(message)
 
             if self.hyperion_schedule and self.hyperion_state == True:
                 log("Hyperion is running, but it shouldnt, stopping service")
                 self.disableHyperion()
 
     def reset(self):
+
         player = xbmc.Player()
+
         if player.isPlayingVideo() == False:
+
             if self.active:
-                if self.show_notifications == "true": notify("Lights switched on" )
+                message = "Lights switched on"
+                if self.show_notifications == "true":
+                    notify(message)
                 subprocess.call( "sudo python /home/pi/.xbmc/addons/service.lux/resources/setpin.py 2 out high", shell=True)
             else:
-                if self.show_notifications == "true": notify("Not active, do nothing" )
+                message = "Not active, do nothing"
+                if self.show_notifications == "true":
+                    notify(message)
+
+            log(message)
 
 monitor = LightsOut()
 
