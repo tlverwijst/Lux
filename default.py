@@ -10,7 +10,7 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 import datetime
-
+import re
 import subprocess
 
 __addon__ = xbmcaddon.Addon()
@@ -37,15 +37,7 @@ def triggerTime(h=0, m=0, next_day=False):
     test_time = now.replace(hour=h, minute=m, second=0, microsecond=0)
     return test_time
 
-def enableForSource(filepath):
 
-    if (filepath.find("http://") > -1): #and getSettingAsBool('ExcludeHTTP'):
-        log("Excluded: Video is playing via HTTP source, which is currently set as excluded location.")
-        return False
-    else:
-        log("Not Excluded: Video is playing from a local source")
-
-    return True
 
 log("Loading '%s' version '%s'" % (__scriptname__, __version__))
 
@@ -62,6 +54,10 @@ class LightsOut(xbmc.Player):
         self.show_notifications = __addon__.getSetting("show_notifications")
         self.reset_timeout = int(__addon__.getSetting("reset_timeout") ) *1000
         self.disable_on_pause = __addon__.getSetting("disable_on_pause")
+
+        self.hyperion_schedule  = __addon__.getSetting("hyperion") == "true"
+        self.hyperion_state     = self.getHyperionState();
+
         # scheduling settings
         self.use_schedule = __addon__.getSetting("use_schedule")
         start_hour      = int(__addon__.getSetting("start_hour") )
@@ -96,6 +92,32 @@ class LightsOut(xbmc.Player):
         xbmc.sleep(self.reset_timeout)
         self.onPlayBackStopped()
 
+    def enableHyperion(self):
+        subprocess.call("sudo /sbin/initctl start hyperion", shell=True)
+
+    def disableHyperion(self):
+        subprocess.call("sudo /sbin/initctl stop hyperion", shell=True)
+
+    def getHyperionState(self):
+        # regex
+        enabled = re.compile('hyperion start/running')
+        disabled = re.compile('hyperion stop/waiting')
+
+        # get state
+        state = subprocess.check_output("sudo /sbin/initctl status hyperion", shell=True)
+
+        if enabled.match(state):
+            log("Hyperion is running")
+            return True
+        elif disabled.match(state):
+            log("Hyperion is NOT running")
+            return False
+        else:
+            log("Hyperion not found")
+            return False
+
+        notify('Hyperion State:' + str(state) )
+
     def enable(self):
 
         trigger_window_active = False
@@ -127,10 +149,21 @@ class LightsOut(xbmc.Player):
                 notify("Switched off the lights" )
             subprocess.call( "sudo python /home/pi/.xbmc/addons/service.lux/resources/setpin.py 2 out low", shell=True)
             self.active = True
+
+            if self.hyperion_schedule and self.hyperion_state == False:
+                log("Enabling Hyperion")
+                self.enableHyperion()
+
+            else:
+                log("Hyperion is already running, or ignoring")
+
         else:
             if self.show_notifications == "true":
                 notify("Trigger is not active")
 
+            if self.hyperion_schedule and self.hyperion_state == True:
+                log("Hyperion is running, but it shouldnt, stopping service")
+                self.disableHyperion()
 
     def reset(self):
         player = xbmc.Player()
