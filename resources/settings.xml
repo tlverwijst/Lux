@@ -4,6 +4,7 @@
         <setting id="show_notifications" type="bool" label="Show notifications" default="false" />
         <setting id="disable_on_pause" type="bool" label="Turn lights on when paused" default="false" />
         <setting id="reset_timeout"  type="slider" label="Timeout" default="5" range="0,1,15"  option="int"/>
+        <setting id="minimum_duration"  type="number" label="Minimum playback duration" default="15"/>
     </category>
     <category label="Schedule">
         <setting id="use_schedule" type="bool" label="Use schedule" default="true" />
